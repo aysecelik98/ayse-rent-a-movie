@@ -26,7 +26,7 @@ namespace VidlyPrototype.Controllers
 
             }
 
-            HttpCookie cookie = new HttpCookie("Language");
+            HttpCookie cookie = new HttpCookie("Language");//baska bır sayfaya gıdınce o dılı kullanacak
             cookie.Value = LanguageAbbreviation;
             Response.Cookies.Add(cookie);
 
