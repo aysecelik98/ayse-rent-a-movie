@@ -1,0 +1,79 @@
+﻿@model IEnumerable<VidlyPrototype.Models.Customer>
+@{
+    ViewBag.Title = Resources.Controller_Customers.customer_title;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div id="customer-header-section">
+    <div class="customer-header-inner header-inner-spaced container">
+        <div class="row">
+            <div class="col">
+                <h3 class="display-4 border-bottom py-2 mb-3">@Resources.Controller_Customers.customer_title</h3>
+                @*@if (Model.Any())
+                {*@
+                    <div class="table-responsive">
+                        <table class="table table-bordered" id="customers">
+                            <thead class="thead-light">
+                                <tr>
+                                    <th>@Resources.Controller_Customers.name</th>
+                                    <th>@Resources.Controller_Customers.membership_type</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @*@foreach (var customer in Model)
+                                {
+                                    <tr>
+                                        <td>@Html.ActionLink(customer.Name, "Edit", "Customers", new { id = customer.Id }, new { @class = "text-capitalize" })</td>
+                                        <td>@customer.MembershipTypes.Name</td>
+                                        <td>
+                                            <button data-customer-id="@customer.Id" class="btn btn-outline-danger align-content-center js-delete" title="Delete Customer">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                }*@
+
+                            </tbody>
+                        </table>
+                    </div>
+                @*}
+                else
+                {
+                    <p class="lead text-center">There are no customers at the moment</p>
+                }*@
+
+                
+            </div>
+        </div>
+        
+    </div>
+</div>
+@section scripts
+{
+    <script>
+        $(document).ready(function () {
+            var table = $("#customers").DataTable({
+                ajax: {
+                    url: "/api/customers",
+                    dataSrc:""
+                },
+                columns: [
+                    {
+                        data: "name",
+                        render: function (data, type, customer) {
+                            return "<a class='text-capitalize' href='/customers/show/" + customer.id + "'>" + customer.name + "</a>";
+                        }
+                    },
+                    {
+                        data: "membershipTypes.name"
+                    }
+                    
+                    
+                ]
+            });
+
+        });
+    </script>
+    
+}
+

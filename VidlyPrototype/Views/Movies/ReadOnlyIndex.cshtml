@@ -1,0 +1,136 @@
+﻿@model IEnumerable<VidlyPrototype.Models.Movie>
+@using Microsoft.AspNet.Identity;
+
+@{
+    ViewBag.Title = Resources.Controller_Movies.page_title;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div id="movie-header-section">
+    <div class="container movie-header-inner header-inner-spaced">
+        <div class="row">
+            <div class="col">
+                <h3 class="display-4 border-bottom py-2 mb-3">@Resources.Controller_Movies.page_title</h3>
+                @*@if (Model.Any())
+                    {*@
+                <div class="table-responsive">
+                    <table class="table table-bordered" id="movies">
+                        <thead class="thead-light">
+                            <tr>
+                                <th>@Resources.Controller_Movies.name</th>
+                                <th>@Resources.Controller_Movies.genre</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @*@foreach (var movie in Model)
+                                {
+                                    <tr>
+                                        <td>@Html.ActionLink(@movie.Name, "Edit", "Movies", new { id = movie.Id }, new { @class = "text-capitalize" })</td>
+                                        <td class="text-capitalize">@movie.MovieGenres.Name</td>
+                                    </tr>
+                                }*@
+                        </tbody>
+                    </table>
+                    
+                </div>
+                @*}
+                    else
+                    {
+                        <p class="lead text-center">There are no movies at the moment</p>
+                    }*@
+            </div>
+        </div>
+    </div>
+</div>
+@section scripts
+{
+    <script>
+        $(document).ready(function () {
+
+            var table = $("#movies").DataTable({
+                ajax: {
+                    url: "/api/movies",
+                    dataSrc: ""
+                },
+                columns: [
+                    {
+                        data: "name",
+                        render: function (data, type, movies) {
+                            return "<a class='text-capitalize' href='/movies/show/" + movies.id + "'>" + movies.name + "</a>";
+                        }
+                    },
+                    {
+                        data: "movieGenres.name",
+                        render: function (data) {
+                            return "<span class='text-capitalize'>" + data + "</span>";
+                        }
+                    },
+                    {
+                        data: "name",
+                        render: function (data, type, movies) {
+                            return "<button class='btn btn-link js-movie-rent' data-movie-id='" + movies.id + "'><i class='fas fa-shopping-basket text-success'></i> @Resources.Controller_Movies.rent</button>";
+                        }
+                    }
+
+                ]
+            });
+
+            
+
+            $("#movies").on('click', ".js-movie-rent", function (e) {
+                e.preventDefault();
+
+                var button = $(this);
+                bootbox.confirm("@Resources.Controller_Movies.rent_sure", function (result) {
+                    if (result) {
+                        $.ajax({
+                            url: "/api/userRentals/",
+                            method: "POST",
+                            data: { "movieId": button.attr("data-movie-id") },
+                            success: function () {
+                                table.row(button.addClass('disabled').html("<i class='fa fa-check'></i> @Resources.Controller_Movies.rented"));
+                                toastr.success("@Resources.Controller_Movies.added_to_rentals");
+                            },
+                            error: function (x, y, j) {
+                                //console.log(x.responseJSON);
+
+                                toastr.error(x.responseJSON);
+                            }
+                        });
+                    }
+                });
+
+            });
+
+            table.rows().every(function (rowIdx, tableLoop, rowLoop) {
+                console.log("this is a row loop");
+            });
+
+            $("#movies .js-movie-rent").each(function (x, y) {
+                var informer = $(this);
+
+
+                var movieId = informer.attr('data-movie-id');
+
+
+                $.ajax({
+                    url: "/api/userRentals/".concat(movieId),
+                    method: "GET",
+                    success: function (data) {
+                        console.log(movieId);
+                        if (data != null) {
+                            informer.addClass('disabled').html("<i class='fa fa-check'></i><i>@Resources.Controller_Movies.rented</i>");
+                        }
+                    },
+                    error: function (x) {
+                        console.log(x.status);
+                    }
+                });
+
+            });
+        });
+    </script>
+
+}
+

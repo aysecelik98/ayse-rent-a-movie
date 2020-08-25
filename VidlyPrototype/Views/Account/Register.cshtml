@@ -1,0 +1,63 @@
+﻿@model VidlyPrototype.Models.RegisterViewModel
+@{
+    ViewBag.Title = Resources.Controller_Account.create_account;
+}
+
+<section id="register-form-section">
+    <div class="dark-overlay-registration">
+        <div class="container register-form-section-inner">
+            <div class="row">
+                <div class="col-md-5 offset-md-4">
+                    <div class="card card-form p-3">
+                        <div class="card-body">
+                            @using (Html.BeginForm("Register", "Account", FormMethod.Post, new { }))
+                            {
+                                @Html.AntiForgeryToken()
+                                <fieldset class="form-group">
+                                    <legend class="border-bottom mb-1 display-4 text-center">@Resources.Controller_Account.sign_up</legend>
+                                    @Html.ValidationSummary(false, "", new { @class = "text-danger small" })
+                                    <div class="input-group mb-2">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text">
+                                                <i class="fas fa-at"></i>
+                                            </span>
+                                        </div>
+                                        @Html.TextBoxFor(m => m.Email, new { @class = "form-control", placeholder = "someone@example.com" })
+                                    </div>
+                                    <div class="input-group mb-2">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text">
+                                                <i class="fas fa-lock"></i>
+                                            </span>
+                                        </div>
+                                        @Html.PasswordFor(m => m.Password, new { @class = "form-control", placeholder = Resources.Controller_Account.password })
+
+                                    </div>
+                                    <div class="input-group mb-2">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text">
+                                                <i class="fas fa-lock"></i>
+                                            </span>
+                                        </div>
+                                        @Html.PasswordFor(m => m.ConfirmPassword, new { @class = "form-control", placeholder = Resources.Controller_Account.confirm_password })
+                                    </div>
+                                    <button class="btn btn-outline-primary btn-block" type="submit">
+                                        @Resources.Controller_Account.sign_up
+                                    </button>
+                                </fieldset>
+                            }
+                                <div class="small">
+                                    @Resources.Controller_Account.already_member @Html.ActionLink(Resources.Controller_Account.access_account, "Login", "Account", null, new { })
+                                </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+}
+

@@ -1,0 +1,219 @@
+﻿@model VidlyPrototype.ViewModels.MovieViewModel
+@{
+    var formTitle = Model.Movies.Id == 0 ? Resources.Controller_Movies.create_movie : Resources.Controller_Movies.update_movie;
+    ViewBag.Title = formTitle;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div id="movies-form-section">
+    <div class="movies-form-inner header-inner-spaced container">
+        <div class="row">
+            <div class="col-md-6 offset-md-3 p-2">
+                <div class="alert alert-info py-2 mb-2 small">
+                    <div class="d-flex">
+                        <div class="align-content-start pr-2">
+                            <i class="fas fa-info-circle fa-2x"></i>
+                        </div>
+                        <div class="align-content-end">
+                            @Resources.Controller_Movies.form_info_message
+                        </div>
+                    </div>
+                     
+                </div>
+                <h3 class="display-4 py-2 mb-3 border-bottom text-center">@formTitle</h3>
+                @using (Html.BeginForm("Save", "Movies"))
+                {
+                    @Html.ValidationSummary(false, "", new { @class = "text-danger small"})
+                    <div class="input-group movie-title-input mb-3">
+                        <div class="input-group-prepend">
+                            <div class="input-group-text">
+                                <span class="far fa-file-video"></span>
+                            </div>
+                        </div>
+                        @*@Html.LabelFor(m => m.Movies.Name)*@
+                        @Html.TextBoxFor(m => m.Movies.Name, new { @class = "form-control", autocomplete = "off", id="movie_input", placeholder=Resources.Controller_Movies.name })
+                        <div class="suggestions">
+                            
+                        </div>
+                        @*@Html.ValidationMessageFor(m => m.Movies.Name, "", new { @class="text-danger small"})*@
+                    </div>
+                    <div class="input-group mb-3">
+                        <div class="input-group-prepend">
+                            <div class="input-group-text">
+                                <span class="far fa-calendar-alt"></span>
+                            </div>
+                        </div>
+                        @*@Html.LabelFor(m => m.Movies.ReleaseDate)*@
+                        @Html.TextBoxFor(m => m.Movies.ReleaseDate, "{0:dd MMM yyyy}", new { @class = "form-control", autocomplete = "off", placeholder = Resources.Controller_Movies.release_date })
+                        @*@Html.ValidationMessageFor(m => m.Movies.ReleaseDate, "", new { @class = "text-danger small" })*@
+                    </div>
+                    <div class="input-group mb-3">
+                        <div class="input-group-prepend">
+                            <div class="input-group-text">
+                                <span class="fas fa-theater-masks"></span>
+                            </div>
+                        </div>
+                        @*@Html.LabelFor(m => m.Movies.MovieGenresId)*@
+                        @Html.DropDownListFor(m => m.Movies.MovieGenresId, new SelectList(Model.MovieGenres, "Id", "Name"), Resources.Controller_Movies.movie_genres_sl, new { @class = "form-control text-capitalize" })
+                        @*@Html.ValidationMessageFor(m => m.Movies.MovieGenresId, "", new { @class = "text-danger small" })*@
+                    </div>
+                    <div class="input-group mb-3">
+                        <div class="input-group-prepend">
+                            <div class="input-group-text">
+                                <span class="fas fa-cart-arrow-down"></span>
+                            </div>
+                        </div>
+                        @*@Html.LabelFor(m => m.Movies.NoInStock)*@
+                        @Html.TextBoxFor(m => m.Movies.NoInStock, new { @class = "form-control", autocomplete = "off", placeholder = Resources.Controller_Movies.number_in_stock })
+                        @*@Html.ValidationMessageFor(m => m.Movies.NoInStock, "", new { @class = "text-danger small" })*@
+                    </div>
+                    @Html.HiddenFor(m => m.Movies.TMdbId, new { value = ""})
+                    @Html.HiddenFor(m => m.Movies.Id)
+                    @Html.AntiForgeryToken()
+                    <button class="btn btn-primary btn-block">@Resources.Controller_Movies.save</button>
+                }
+
+            </div>
+        </div>
+    </div>
+</div>
+@section scripts
+{
+    <script>
+        $(document).ready(function () {
+
+            //boolean value to check if filled
+            let isFilled = false;
+            //create data to be displayed
+            const data = [
+                {
+                    id: 1, name: "Margai"
+                },
+                {
+                    id: 2, name: "Keith"
+                },
+                {
+                    id: 3, name: "Rumana"
+                },
+                {
+                    id: 4, name: "Fatma"
+                },
+                {
+                    id: 5, name: "Salma"
+                }
+                //"Margai", "Keith", "Abdul", "Ali", "Sadam", "Masoud", "Sally", "Salma", "Yusuf", "Hawa", "Rina", "Faiza", "Hudah", "Mavita",
+                //"Halima", "Fatma", "Hadya", "Omar", "Adnan", "Alhaj", "Rumana"
+            ];
+            //sort data in ascending order
+            data.sort();
+
+            //variable
+            const apiData = {
+                'title': [],
+                'releaseDate': [],
+                'id': [],
+                'fullDate':[]
+            };
+
+
+            const initDialog = () => {
+                clearDialog();
+
+                for (var i = 0; i < data.length; i++) {
+                    $(".suggestions").append("<div class='dropdown-content' data-user-id='" + data[i].id + "'>" + data[i].name + "</div>");
+                }
+            }
+
+            const clearDialog = () => {
+                $(".suggestions").empty();
+            }
+
+            //$("#movie_input").on('click', () => {
+ 
+            //    if (!isFilled) {
+            //        $(".suggestions").addClass('show');
+            //    }
+            //});
+
+            $('body').on('click', '.suggestions > div',function() {
+                var button = $(this);
+
+
+                $("#movie_input").val(button.text()).focus();
+                $("#Movies_TMdbId").val(button.attr('data-movie-id'));
+
+                isFilled = true;
+
+            });
+
+            const match = (str) => {
+
+                const limit = 20;
+
+                if (str !== "") {
+
+                    str = str.toLowerCase();
+                    clearDialog();
+
+                    //get data from api
+                    $.ajax({
+                        url: "https://api.themoviedb.org/3/search/movie?api_key=7538a1ba766c36605ab0e8e10bab23da&query=".concat(str),
+                        method: "GET",
+                        dataType: "json",
+                        success: function (data) {
+
+                            //reset api data to empty array
+                            apiData.title = [];
+                            apiData.releaseDate = [];
+                            apiData.id = [];
+
+                            data.results.forEach((value, key) => {
+                                apiData.title.push(value['title']);
+                                apiData.fullDate.push(value['release_date']);
+                                apiData.releaseDate.push(value['release_date'].substring(0, value['release_date'].indexOf("-")));
+                                apiData.id.push(value['id']);
+
+
+
+                            });
+
+                            for (var i = 0; i < apiData.title.length; i++) {
+                                if (apiData.title[i].toLowerCase().startsWith(str)) {
+                                    $(".suggestions").append("<div class='dropdown-content' data-release-date='" + apiData.fullDate[i] + "'data-movie-id='" + apiData.id[i] + "'>" + apiData.title[i] + "(" + apiData.releaseDate[i] + ")</div>")
+                                }
+                            }
+
+                        },
+                        error: function (x) {
+                            console.log(x.status);
+                        }
+                    });
+
+
+                } else {
+
+                    $("#Movies_TMdbId").val("");
+                }
+                
+            }
+
+            $("#movie_input").on('input', function () {
+
+                    $(".suggestions").addClass('show');
+                    isFilled = false;
+                    match($(this).val());
+                
+            });
+
+            $("body").click(function (e) {
+                if (!$(e.target).is("#movie_input")) {
+                    $(".suggestions").removeClass('show');
+                }
+            });
+
+            initDialog();
+        });
+    </script>    
+
+
+}

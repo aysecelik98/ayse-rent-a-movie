@@ -1,0 +1,137 @@
+﻿@model VidlyPrototype.ViewModels.MovieRentalsShowViewModel
+@using VidlyPrototype.Models
+@{
+    ViewBag.Title = Model.Movies.Name == null?Resources.Controller_Movies.show:Model.Movies.Name.ToUpper();
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var imageBase = "https://image.tmdb.org/t/p/original";
+
+    string fullImage = imageBase + Model.Movies.PosterImage;
+    
+}
+<section id="show-movie-section">
+    <div class="show-movie-inner container mb-4">
+        <div class="row">
+            <div class="col">
+                <div class="card">
+                    <div class="card-body">
+                        
+                        <div class="row">
+                            <div class="col-lg-4">
+                                <div class="movie-details border-right border-2 p-2 pt-3 text-center">
+                                    <div class="d-flex flex-column">
+                                        <div class="align-content-center border-bottom p-3 mb-3">
+                                            @if (Model.Movies.PosterImage.IsEmpty())
+                                            {
+                                                <img src="~/Content/Images/no_image.jpg" alt="@Model.Movies.Name-poster" class="img-fluid rounded" height="150" width="150">
+                                            }
+                                            else
+                                            {
+                                                <img src="@fullImage" alt="@Model.Movies.Name-poster" class="img-fluid rounded" height="150" width="150">
+                                            }
+
+                                        </div>
+
+                                        <h4 class="display-5 text-capitalize">@Model.Movies.Name</h4>
+                                        <ul class="list-unstyled small text-center">
+                                            <li class="text-capitalize">
+                                                <i class="fas fa-theater-masks" title="@Resources.Controller_Movies.genre"></i> <b>@Resources.Controller_Movies.genre:</b> @Model.Movies.MovieGenres.Name
+                                            </li>
+                                            <li>
+                                                <i class="fas fa-cart-arrow-down" title="@Resources.Controller_Movies.available"></i> <b>@Resources.Controller_Movies.available:</b> @Model.Movies.NumberAvailable/@Model.Movies.NoInStock
+                                                @{
+                                                    var rented = Model.Movies.NoInStock - Model.Movies.NumberAvailable;
+                                                }
+                                                <i class="fas fa-shopping-cart pl-1" title="@Resources.Controller_Movies.rented"></i> <b>@Resources.Controller_Movies.rented:</b> @rented
+                                            </li>
+                                            <li>
+                                                <i class="far fa-calendar-alt" title="@Resources.Controller_Movies.release_date"></i> @Model.Movies.ReleaseDate.ToString("yyyy-MM-dd")
+                                                <i class="far fa-calendar-plus pl-1" title="@Resources.Controller_Movies.date_added"></i> @Model.Movies.DateAdded.ToString("yyyy-MM-dd")
+                                            </li>
+                                            @if (!Model.Movies.Summary.IsEmpty())
+                                            {
+                                                <li class="border-top border-bottom py-2 my-2">
+                                                    <p>
+                                                        @Model.Movies.Summary
+                                                    </p>
+                                                </li>
+                                            }
+                                              
+                                        </ul>
+                                        @if(User.Identity.IsAuthenticated && User.IsInRole(RoleName.IsAdministrator))
+                                        {
+                                            @*@Html.ActionLink("Edit Movie","Edit", "Movies", new { id = Model.Movies.Id}, new { @class="btn btn-lg btn-outline-primary"})*@
+                                            <a href="@Url.Action("Edit", "Movies", new { id = Model.Movies.Id })" class="btn btn-lg btn-outline-primary">
+                                                <i class="fas fa-edit"></i> @Resources.Controller_Movies.update_movie
+                                            </a>
+                                        }
+                                        
+                                        @*<p>
+                                            Lorem ipsum dolor sit amet consectetur adipisicing elit. Qui at atque recusandae incidunt voluptas saepe!
+                                        </p>*@
+
+                                    </div>
+
+
+                                </div>
+
+                            </div>
+                            <div class="col-lg-8">
+                                <div class="movie-relations p-2 pt-3 text-center">
+                                    <h4 class="display-4 border-bottom my-3">@Resources.Controllers_Customers_Form.movies_rented...</h4>
+                                    @if (User.Identity.IsAuthenticated && User.IsInRole(RoleName.IsAdministrator))
+                                    {
+                                        if (Model.Rentals.Count > 0)
+                                        {
+                                            <div class="table-responsive">
+                                                <table class="table table-bordered table-hover">
+                                                    <thead class="thead-light">
+                                                        <tr>
+                                                            <th>@Resources.Controller_Customers.name</th>
+                                                            <th>@Resources.Controllers_Customers_Form.date_rented</th>
+                                                            <th>@Resources.Controllers_Customers_Form.return_date</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        @foreach (var rental in Model.Rentals)
+                                                        {
+                                                            <tr>
+                                                                <td class="text-capitalize">
+                                                                    @Html.ActionLink(rental.Customer.Name, "Show", "Customers", new { id = rental.Customer.Id }, new { })
+                                                                </td>
+                                                                <td>@rental.DateRented.ToString("d MMM yyyy 'at' h:mtt")</td>
+                                                                @{
+                                                                    var DateReturned = !rental.DateReturned.HasValue ? "-" : rental.DateReturned.Value.ToString("d MMM yyyy 'at' h:mmtt");
+                                                                }
+                                                                <td>@DateReturned</td>
+                                                            </tr>
+                                                        }
+
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <p class="text-warning h3">
+                                                <i class="fas fa-exclamation-circle"></i> @Resources.Controllers_Customers_Form.no_rentals
+                                            </p>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <p class="text-danger h3">
+                                            <i class="fas fa-user-lock"></i> @Resources.Controllers_Customers_Form.viewership_restriction
+                                        </p>
+                                    }
+
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
